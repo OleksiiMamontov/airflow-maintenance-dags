@@ -70,6 +70,11 @@ def delete_broken_dag_files(**context):
     logging.info("session:                  " + str(session))
     logging.info("")
 
+    if not ENABLE_DELETE:
+        logging.warn("You're opted to skip Deleting the DAG file(s)!!!")
+        logging.info("Finished")
+        return
+
     errors = session.query(ImportError).all()
 
     logging.info(
@@ -81,17 +86,12 @@ def delete_broken_dag_files(**context):
         "Process will be Deleting " + str(len(errors)) + " DAG file(s)"
     )
 
-    if ENABLE_DELETE:
-        logging.info("Performing Delete...")
-        for error in errors:
-            if os.path.exists(error.filename):
-                os.remove(error.filename)
-            session.delete(error)
-        logging.info("Finished Performing Delete")
-    else:
-        logging.warn("You're opted to skip Deleting the DAG file(s)!!!")
-
-    logging.info("Finished")
+    logging.info("Performing Delete...")
+    for error in errors:
+        if os.path.exists(error.filename):
+            os.remove(error.filename)
+        session.delete(error)
+    logging.info("Finished Performing Delete")
 
 
 delete_broken_dag_files = PythonOperator(
